@@ -8,11 +8,12 @@ df['Date'] = pd.to_datetime(df['Date'])
 
 # Define time slots
 def assign_time_slot(hour):
-    if 9 <= hour < 13:
+    TRTHour = hour + 3
+    if 9 <= TRTHour < 13:
         return "Slot 1 (09:00 - 13:00)"
-    elif 13 <= hour < 18:
+    elif 13 <= TRTHour < 18:
         return "Slot 2 (13:00 - 18:00)"
-    elif 18 <= hour <= 23:
+    elif 18 <= TRTHour <= 23:
         return "Slot 3 (18:00 - 23:00)"
     else:
         return "Outside Working Hours"
@@ -38,6 +39,26 @@ slot_performance = df.groupby('Time Slot').agg({
     'Tweet ID': 'count'
 }).rename(columns={'Tweet ID': 'Tweet Count'})
 
+# Calculate average engagement score for each time slot
+slot_performance['Avg Engagement Score'] = slot_performance['Likes'] + slot_performance['Retweet Count'] + slot_performance['Views Count']
+
+# Get worst 5 time slots
+worst_time_slots = slot_performance.sort_values(by='Avg Engagement Score', ascending=True).head(5)
+
+# --- Daily Performance Analysis ---
+daily_performance = df.groupby(df['Date'].dt.date).agg({
+    'Likes': 'sum',
+    'Retweet Count': 'sum', 
+    'Views Count': 'sum',
+    'Tweet ID': 'count'
+}).rename(columns={'Tweet ID': 'Post Count'})
+
+# Calculate daily engagement score
+daily_performance['Daily Engagement Score'] = daily_performance['Likes'] + daily_performance['Retweet Count'] + daily_performance['Views Count']
+
+# Get worst 5 days
+worst_days = daily_performance.sort_values(by='Daily Engagement Score', ascending=True).head(5)
+
 # --- Top 3 Workers ---
 worker_performance = df.groupby('Worker').agg({
     'Likes': 'sum',
@@ -58,6 +79,12 @@ print(top_retweeted[['Date', 'Text', 'Retweet Count', 'Tweet URL']], end='\n\n')
 
 print("=== Average Engagement by Time Slot ===")
 print(slot_performance, end='\n\n')
+
+print("=== Worst 5 Time Slots (Lowest Average Engagement) ===")
+print(worst_time_slots, end='\n\n')
+
+print("=== Worst 5 Days (Lowest Total Engagement) ===")
+print(worst_days, end='\n\n')
 
 print("=== Most Successful Workers ===")
 print(top_3_workers)
