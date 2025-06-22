@@ -6,14 +6,16 @@ df = pd.read_excel("gt.xlsx")
 # Convert Date column to datetime
 df['Date'] = pd.to_datetime(df['Date'])
 
+# Convert to Turkish time (UTC+3)
+df['Date'] = df['Date'] + pd.Timedelta(hours=3)
+
 # Define time slots
 def assign_time_slot(hour):
-    TRTHour = hour + 3
-    if 9 <= TRTHour < 13:
+    if 9 <= hour < 13:
         return "Slot 1 (09:00 - 13:00)"
-    elif 13 <= TRTHour < 18:
+    elif 13 <= hour < 18:
         return "Slot 2 (13:00 - 18:00)"
-    elif 18 <= TRTHour <= 23:
+    elif 18 <= hour <= 23:
         return "Slot 3 (18:00 - 23:00)"
     else:
         return "Outside Working Hours"
@@ -70,6 +72,9 @@ worker_performance = df.groupby('Worker').agg({
 
 top_3_workers = worker_performance.head(5)
 
+# --- Worst 5 Workers ---
+worst_5_workers = worker_performance.tail(5)
+
 # --- Display Results ---
 print("=== Top 3 Most Liked Tweets ===")
 print(top_liked[['Date', 'Text', 'Likes', 'Tweet URL']], end='\n\n')
@@ -87,4 +92,7 @@ print("=== Worst 5 Days (Lowest Total Engagement) ===")
 print(worst_days, end='\n\n')
 
 print("=== Most Successful Workers ===")
-print(top_3_workers)
+print(top_3_workers, end='\n\n')
+
+print("=== Worst 5 Workers (Lowest Engagement) ===")
+print(worst_5_workers)
