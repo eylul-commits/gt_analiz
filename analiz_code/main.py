@@ -72,8 +72,10 @@ worker_performance = df.groupby('Worker').agg({
 
 top_3_workers = worker_performance.head(5)
 
-# --- Worst 5 Workers ---
-worst_5_workers = worker_performance.tail(5)
+# --- Worst 5 Workers (excluding Outside Working Hours) ---
+# Filter out workers that are "Outside Working Hours"
+actual_workers = worker_performance[~worker_performance.index.str.contains("Outside Working Hours")]
+worst_5_workers = actual_workers.tail(5)
 
 # --- Display Results ---
 print("=== Top 3 Most Liked Tweets ===")
@@ -94,5 +96,5 @@ print(worst_days, end='\n\n')
 print("=== Most Successful Workers ===")
 print(top_3_workers, end='\n\n')
 
-print("=== Worst 5 Workers (Lowest Engagement) ===")
+print("=== Worst 5 Workers (Lowest Engagement - Actual Slots Only) ===")
 print(worst_5_workers)
